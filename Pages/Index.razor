@@ -1,3 +1,48 @@
 ﻿@page "/"
+@inherits QRCodeGenerator.Pages.IndexBase
 
-<h1>Hello, world!</h1>
+<div class="@WrapperClass">
+    <header>
+        <h1>QR Code Generator</h1>
+        <p>Paste a URL or Enter text to create QR code</p>
+    </header>
+    <div class="form">
+        <input type="text" @bind="QRText" spellcheck="false" placeholder="Enter text or url" />
+        <button @onclick="GenerateQRCode">Generate QR Code</button>
+    </div>
+    <div class="qr-code">
+        <img src="@QRCodeUrl" alt="qr-code" />
+    </div>
+</div>
+
+@code {
+    private string? QRText;
+    private string? QRCodeUrl;
+
+    private async Task GenerateQRCode()
+    {
+        if (string.IsNullOrEmpty(QRText) || QRText == QRCodeUrl) return;
+
+        QRCodeUrl = $"https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={QRText}";
+        await Task.Delay(500);
+    }
+
+    protected override void OnInitialized()
+    {
+        QRText = null;
+        QRCodeUrl = null;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender) return;
+        if (string.IsNullOrEmpty(QRCodeUrl)) return;
+
+        wrapperClass += " active";
+    }
+}
+
+@functions {
+    private new string wrapperClass = "wrapper";
+    private string WrapperClass => wrapperClass;
+}
